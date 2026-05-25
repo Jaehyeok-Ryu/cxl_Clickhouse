@@ -1,0 +1,23 @@
+<clickhouse>
+    <remote_servers>
+        <tpc_cluster>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>clickhouse_worker1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>clickhouse_worker2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </tpc_cluster>
+    </remote_servers>
+    <max_server_memory_usage>68719476736</max_server_memory_usage> <!-- 64GB system-wide -->
+    <!-- Configure listen to allow remote cluster networking -->
+    <listen_host>::</listen_host>
+</clickhouse>

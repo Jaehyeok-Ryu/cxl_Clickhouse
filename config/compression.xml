@@ -1,0 +1,7 @@
+<clickhouse>
+    <compression>
+        <case>
+            <method>lz4</method>
+        </case>
+    </compression>
+</clickhouse>
