@@ -7,9 +7,12 @@
 
 set -e
 
-PROJECT_DIR="/home/sawi/cxl_ClickHouse"
+# Get the absolute directory path where this script resides dynamically
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${PROJECT_DIR}/config"
-STAGING_DIR="/home/sawi/cxl_TPC/tpch-dbgen"
+
+# Allow STAGING_DIR to be overridden, default dynamically relative to user's home directory
+STAGING_DIR="${STAGING_DIR:-$HOME/cxl_TPC/tpch-dbgen}"
 
 IMAGE_NAME="clickhouse/clickhouse-server:latest"
 CONTAINER_COORD="clickhouse_coordinator"
@@ -39,7 +42,7 @@ if [ "${NUM_SOCKETS}" -eq 1 ]; then
     SOCKET0_CPUS="0-$((HALF_CORES - 1))"
     SOCKET1_CPUS="${HALF_CORES}-${MAX_CORE_ID}"
 else
-    # Dual-socket production server (sawi's CloudCXL Server)
+    # Dual-socket production server (CloudCXL Server)
     # Socket 0: Even cores usually, Socket 1: Odd cores or strictly partitioned ranges.
     # We retrieve the actual CPU ranges for Node 0 and Node 1.
     SOCKET0_CPUS=$(lscpu -p=node,cpu | grep -E "^0," | cut -d',' -f2 | paste -sd, -)

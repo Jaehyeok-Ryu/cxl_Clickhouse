@@ -15,8 +15,8 @@ from datetime import timedelta
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-PROJECT_DIR = "/home/sawi/cxl_ClickHouse"
-STAGING_DIR = "/home/sawi/cxl_TPC/tpch-dbgen"
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+STAGING_DIR = os.getenv("STAGING_DIR", os.path.expanduser("~/cxl_TPC/tpch-dbgen"))
 QUERIES_DIR = f"{PROJECT_DIR}/queries"
 REPORT_PATH = f"{PROJECT_DIR}/benchmark_report.md"
 
