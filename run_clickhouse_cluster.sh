@@ -12,7 +12,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${PROJECT_DIR}/config"
 
 # Allow STAGING_DIR to be overridden, default dynamically relative to user's home directory
-STAGING_DIR="${STAGING_DIR:-$HOME/cxl_TPC/tpch-dbgen}"
+STAGING_DIR="${STAGING_DIR:-$PROJECT_DIR/tpch-dbgen}"
 
 IMAGE_NAME="clickhouse/clickhouse-server:latest"
 CONTAINER_COORD="clickhouse_coordinator"
@@ -21,6 +21,16 @@ CONTAINER_WORKER2="clickhouse_worker2"
 
 # Ensure config directory exists
 mkdir -p "${CONFIG_DIR}"
+
+# Resolve host paths for numactl and libnuma.so.1 to mount into docker
+HOST_NUMACTL=$(which numactl || true)
+HOST_LIBNUMA=$(ldconfig -p | grep libnuma.so.1 | head -n 1 | awk '{print $4}' || true)
+
+if [ -z "$HOST_NUMACTL" ] || [ -z "$HOST_LIBNUMA" ]; then
+    echo "[ERROR] numactl or libnuma.so.1 not found on host system. Please install numactl."
+    exit 1
+fi
+
 
 # --------------------------------------------------------------------
 # 1. Detect CPU Socket Layout (Same topology detection as Citus)
@@ -207,8 +217,8 @@ docker run -d \
     --user clickhouse \
     -p 8124:8123 \
     -p 9001:9000 \
-    -v /usr/local/bin/numactl:/usr/local/bin/numactl \
-    -v /usr/local/lib/libnuma.so.1:/usr/lib/x86_64-linux-gnu/libnuma.so.1 \
+    -v "$HOST_NUMACTL":/usr/local/bin/numactl \
+    -v "$HOST_LIBNUMA":/usr/lib/x86_64-linux-gnu/libnuma.so.1 \
     -v "${CONFIG_DIR}/remote_servers.xml:/etc/clickhouse-server/config.d/remote_servers.xml" \
     -v "${CONFIG_DIR}/memory_tuning.xml:/etc/clickhouse-server/users.d/memory_tuning.xml" \
     -v "${CONFIG_DIR}/compression.xml:/etc/clickhouse-server/config.d/compression.xml" \
@@ -232,8 +242,8 @@ docker run -d \
     --user clickhouse \
     -p 8125:8123 \
     -p 9002:9000 \
-    -v /usr/local/bin/numactl:/usr/local/bin/numactl \
-    -v /usr/local/lib/libnuma.so.1:/usr/lib/x86_64-linux-gnu/libnuma.so.1 \
+    -v "$HOST_NUMACTL":/usr/local/bin/numactl \
+    -v "$HOST_LIBNUMA":/usr/lib/x86_64-linux-gnu/libnuma.so.1 \
     -v "${CONFIG_DIR}/remote_servers.xml:/etc/clickhouse-server/config.d/remote_servers.xml" \
     -v "${CONFIG_DIR}/memory_tuning.xml:/etc/clickhouse-server/users.d/memory_tuning.xml" \
     -v "${CONFIG_DIR}/compression.xml:/etc/clickhouse-server/config.d/compression.xml" \

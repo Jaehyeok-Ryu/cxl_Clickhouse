@@ -16,7 +16,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-STAGING_DIR = os.getenv("STAGING_DIR", os.path.expanduser("~/cxl_TPC/tpch-dbgen"))
+STAGING_DIR = os.getenv("STAGING_DIR", f"{PROJECT_DIR}/tpch-dbgen")
 QUERIES_DIR = f"{PROJECT_DIR}/queries"
 REPORT_PATH = f"{PROJECT_DIR}/benchmark_report.md"
 
@@ -68,6 +68,11 @@ def load_data_to_clickhouse(scale_factor):
             
     if missing_any:
         print(f"\n=== [INFO] Generating TPC-H Raw Data (Scale Factor: {scale_factor} GB) ===")
+        
+        if not os.path.exists(f"{STAGING_DIR}/dbgen"):
+            print(f"[INFO] Compiling TPC-H dbgen in {STAGING_DIR}...")
+            subprocess.run("make", shell=True, check=True, cwd=STAGING_DIR)
+
         # Remove any lingering files
         for f in os.listdir(STAGING_DIR):
             if f.endswith(".tbl"):
